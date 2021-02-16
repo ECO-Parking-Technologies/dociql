@@ -3,9 +3,10 @@ const yaml = require('js-yaml')
 const url = require('url')
 const fs = require("fs")
 const fetchSchema = require("./fetch-schema")
+const loadSchemaFile = require("./load-schema-file")
 const composePaths = require("./compose-paths")
 
-module.exports = function(specPath, headers, introspectionUrl) {
+module.exports = async function(specPath, headers, introspectionUrl, schemaPath) {
     // read spec file content
     const fileContent = fs.readFileSync(specPath, "utf8")
     // deserialise
@@ -13,7 +14,9 @@ module.exports = function(specPath, headers, introspectionUrl) {
     // fetch graphQL Schema, if given an introspection url use that over the value in
     // the spec
     const graphUrl = introspectionUrl ? introspectionUrl : spec.introspection
-    const {graphQLSchema, jsonSchema} = fetchSchema(graphUrl, headers)
+
+    // if present load the schema from the file, otherwise use introspection
+    const { graphQLSchema, jsonSchema } = schemaPath ? await loadSchemaFile(schemaPath) : fetchSchema(graphUrl, headers)
 
     // parse URL
     const parsedUrl = url.parse(graphUrl)

@@ -26,6 +26,7 @@ program.version(package.version)
     .option('-c, --config-file <file>', 'specify a custom configuration file (default: app/lib/config.js)')
     .option('-H, --header <header>', 'specify a custom auth token for the header (default: none)')
     .option('-u, --introspection-url <url>', 'specify a custom url to use for introspection (default: none)')
+    .option('-m, --schema-file <file>', 'specify a path to the schema file (default: none)')
     .option('-q, --quiet', 'Silence the output from the generator (default: false)')
     // .option('-f, --spec-file <file>', 'the input OpenAPI/Swagger spec file (default: test/fixtures/petstore.json)', String, 'test/fixtures/petstore.json')
     .parse(process.argv)
@@ -38,4 +39,4 @@ if (program.args.length < 1) { // && program.rawArgs.length < 1
 program.specFile = program.args[0]; // || path.resolve(root, 'test/fixtures/cheese.json')
 
 // Run the main app with parsed options
-spectacle(program)
+(async () => await spectacle(program))()

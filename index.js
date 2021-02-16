@@ -46,19 +46,20 @@ function resolveOptions(options) {
 /**
  * Run Spectacle and configured tasks
  **/
-module.exports = function (options) {
+module.exports = async function (options) {
     var opts = resolveOptions(options)
 
     //
     //= Load the specification and init configuration
 
-    function loadData() {
+    async function loadData() {
         var specPath = path.resolve(opts.specFile)
-        var specData = require(path.resolve(opts.appDir + '/dociql/index'))(specPath, opts.header, opts.introspectionUrl)
+        var schemaPath = opts.schemaFile ? path.resolve(opts.schemaFile) : null
+        var specData = await require(path.resolve(opts.appDir + '/dociql/index'))(specPath, opts.header, opts.introspectionUrl, schemaPath)
         return require(path.resolve(opts.appDir + '/lib/preprocessor'))(options, specData)
     }
 
-    var config = require(path.resolve(opts.configFile))(grunt, opts, loadData())
+    var config = await require(path.resolve(opts.configFile))(grunt, opts, await loadData())
 
     //
     //= Setup Grunt to do the heavy lifting
@@ -125,9 +126,10 @@ module.exports = function (options) {
     grunt.registerTask('develop', ['server', 'watch'])
 
     // Reload template data when watch files change
-    grunt.event.on('watch', function() {
+    grunt.event.on('watch', async function() {
         try {
-            grunt.config.set('compile-handlebars.compile.templateData', loadData())
+            const data = await loadData()
+            grunt.config.set('compile-handlebars.compile.templateData', data)
         } catch (e) {
             grunt.fatal(e);
         }
